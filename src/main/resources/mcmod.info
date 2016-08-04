@@ -1,0 +1,16 @@
+[
+{
+  "modid": "tc",
+  "name": "TrainCraft",
+  "description": "A mod that many trains and other vehicles to the game.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["ExampleDude"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
