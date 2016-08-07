@@ -1,0 +1,20 @@
+{
+    "parent": "block/cube_all",
+    "elements": [
+        {
+            "from": [2, 2, 2],
+            "to": [14, 14, 14],
+            "faces": {
+                "down": {"texture": "#all", "cullface": "down"},
+                "up": {"texture": "#all", "cullface": "up"},
+                "north": {"texture": "#all", "cullface": "north"},
+                "south": {"texture": "#all", "cullface": "south"},
+                "west": {"texture": "#all", "cullface": "west"},
+                "east": {"texture": "#all", "cullface": "east"}
+            }
+        }
+    ],
+    "textures": {
+        "all": "blocks/iron_block"
+    }
+}

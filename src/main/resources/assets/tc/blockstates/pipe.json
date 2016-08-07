@@ -1,0 +1,16 @@
+{
+    "forge_marker": 1,
+    "defaults": {
+        "model": "tc:pipe/base"
+    },
+    "variants": {
+        "multipart": [{}],
+        "inventory": [{}],
+        "connected_down": {"false": {}, "true": {"submodel": "tc:pipe/connection", "x": 0, "y": 0}},
+        "connected_up": {"false": {}, "true": {"submodel": "tc:pipe/connection", "x": 180, "y": 0}},
+        "connected_north": {"false": {}, "true": {"submodel": "tc:pipe/connection", "x": 90, "y": 180}},
+        "connected_south": {"false": {}, "true": {"submodel": "tc:pipe/connection", "x": 90, "y": 0}},
+        "connected_west": {"false": {}, "true": {"submodel": "tc:pipe/connection", "x": 90, "y": 90}},
+        "connected_east": {"false": {}, "true": {"submodel": "tc:pipe/connection", "x": 90, "y": 270}}
+    }
+}
