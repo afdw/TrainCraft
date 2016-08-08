@@ -20,21 +20,6 @@ public class ItemPipe extends ItemMultiPart {
 
     @Override
     public IMultipart createPart(World world, BlockPos pos, EnumFacing side, Vec3d hit, ItemStack stack, EntityPlayer player) {
-        PartPipe partPipeNew = new PartPipe();
-        for(EnumFacing facing : EnumFacing.values()) {
-            IMultipartContainer multipartContainer = MultipartHelper.getPartContainer(world, pos.offset(facing));
-            if(multipartContainer != null) {
-                PartPipe[] partPipes = multipartContainer.getParts().stream().filter(part -> part.getClass() == PartPipe.class).toArray(PartPipe[]::new);
-                for(PartPipe partPipe : partPipes) {
-                    if(!partPipeNew.connections.contains(facing)) {
-                        partPipeNew.connections.add(facing);
-                    }
-                    if(!partPipe.connections.contains(facing.getOpposite())) {
-                        partPipe.connections.add(facing.getOpposite());
-                    }
-                }
-            }
-        }
-        return partPipeNew;
+        return new PartPipe();
     }
 }
