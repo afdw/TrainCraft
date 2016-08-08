@@ -3,10 +3,7 @@ package com.tc.pipe;
 import com.tc.lib.TCPart;
 import com.tc.lib.TCProperties;
 import com.tc.lib.Utils;
-import mcmultipart.multipart.IMultipartContainer;
-import mcmultipart.multipart.INormallyOccludingPart;
-import mcmultipart.multipart.Multipart;
-import mcmultipart.multipart.MultipartHelper;
+import mcmultipart.multipart.*;
 import mcmultipart.raytrace.PartMOP;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
@@ -19,14 +16,15 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 
-import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.EnumSet;
 import java.util.List;
 
-public class PartPipe extends TCPart implements INormallyOccludingPart {
+public class PartPipe extends TCPart implements INormallyOccludingPart, ISlottedPart {
     public static AxisAlignedBB BASE_AABB = new AxisAlignedBB(2.0 / 16.0, 2.0 / 16.0, 2.0 / 16.0, 14.0 / 16.0, 14.0 / 16.0, 14.0 / 16.0);
     public static AxisAlignedBB CONNECTION_AABB = new AxisAlignedBB(1.0 / 16.0, 0.0 / 16.0, 1.0 / 16.0, 15.0 / 16.0, 2.0 / 16.0, 15.0 / 16.0);
 
-    public List<EnumFacing> connections = new ArrayList<>(6);
+    public BitSet connections = new BitSet(6);
 
     @Override
     protected void addProperties(List<IProperty<?>> properties) {
@@ -42,52 +40,38 @@ public class PartPipe extends TCPart implements INormallyOccludingPart {
     @Override
     public IBlockState getActualState(IBlockState state) {
         return state
-                .withProperty(TCProperties.CONNECTED_DOWN, connections.contains(EnumFacing.DOWN))
-                .withProperty(TCProperties.CONNECTED_UP, connections.contains(EnumFacing.UP))
-                .withProperty(TCProperties.CONNECTED_NORTH, connections.contains(EnumFacing.NORTH))
-                .withProperty(TCProperties.CONNECTED_SOUTH, connections.contains(EnumFacing.SOUTH))
-                .withProperty(TCProperties.CONNECTED_WEST, connections.contains(EnumFacing.WEST))
-                .withProperty(TCProperties.CONNECTED_EAST, connections.contains(EnumFacing.EAST))
+                .withProperty(TCProperties.CONNECTED_DOWN, connections.get(EnumFacing.DOWN.ordinal()))
+                .withProperty(TCProperties.CONNECTED_UP, connections.get(EnumFacing.UP.ordinal()))
+                .withProperty(TCProperties.CONNECTED_NORTH, connections.get(EnumFacing.NORTH.ordinal()))
+                .withProperty(TCProperties.CONNECTED_SOUTH, connections.get(EnumFacing.SOUTH.ordinal()))
+                .withProperty(TCProperties.CONNECTED_WEST, connections.get(EnumFacing.WEST.ordinal()))
+                .withProperty(TCProperties.CONNECTED_EAST, connections.get(EnumFacing.EAST.ordinal()))
                 ;
     }
 
     @Override
     public void writeUpdatePacket(PacketBuffer buf) {
         super.writeUpdatePacket(buf);
-        buf.writeInt(connections.size());
-        for(EnumFacing connection : connections) {
-            buf.writeInt(connection.ordinal());
-        }
+        buf.writeLongArray(connections.toLongArray());
     }
 
     @Override
     public void readUpdatePacket(PacketBuffer buf) {
         super.readUpdatePacket(buf);
-        int count = buf.readInt();
-        for(int i = 0; i < count; i++) {
-            connections.add(EnumFacing.values()[buf.readInt()]);
-        }
+        connections = BitSet.valueOf(buf.readLongArray(new long[6]));
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
-        int[] connectionsArray = new int[connections.size()];
-        for(int i = 0; i < connections.size(); i++) {
-            EnumFacing connection = connections.get(i);
-            connectionsArray[i] = connection.ordinal();
-        }
-        tag.setIntArray("connections", connectionsArray);
+        tag.setByteArray("connections", connections.toByteArray());
         return tag;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
-        int[] connectionsArray = tag.getIntArray("connections");
-        for(int connectionIndex : connectionsArray) {
-            connections.add(EnumFacing.values()[connectionIndex]);
-        }
+        connections = BitSet.valueOf(tag.getByteArray("connections"));
     }
 
     @Override
@@ -95,13 +79,14 @@ public class PartPipe extends TCPart implements INormallyOccludingPart {
         for(EnumFacing facing : EnumFacing.values()) {
             IMultipartContainer multipartContainer = MultipartHelper.getPartContainer(getWorld(), getPos().offset(facing));
             if(multipartContainer != null) {
-                PartPipe[] partPipes = multipartContainer.getParts().stream().filter(part -> part.getClass() == PartPipe.class).toArray(PartPipe[]::new);
-                for(PartPipe partPipe : partPipes) {
-                    if(!this.connections.contains(facing)) {
-                        this.connections.add(facing);
+                ISlottedPart slottedPart = multipartContainer.getPartInSlot(PartSlot.CENTER);
+                if(slottedPart != null && slottedPart instanceof PartPipe) {
+                    PartPipe partPipe = (PartPipe) slottedPart;
+                    if(!connections.get(facing.ordinal())) {
+                        connections.set(facing.ordinal());
                     }
-                    if(!partPipe.connections.contains(facing.getOpposite())) {
-                        partPipe.connections.add(facing.getOpposite());
+                    if(!partPipe.connections.get(facing.getOpposite().ordinal())) {
+                        partPipe.connections.set(facing.getOpposite().ordinal());
                     }
                 }
             }
@@ -110,27 +95,19 @@ public class PartPipe extends TCPart implements INormallyOccludingPart {
 
     @Override
     public void onRemoved() {
-        for(EnumFacing connection : connections) {
-            IMultipartContainer multipartContainer = MultipartHelper.getPartContainer(getWorld(), getPos().offset(connection));
+        for(EnumFacing facing : EnumFacing.values()) {
+            if(!connections.get(facing.ordinal())) {
+                continue;
+            }
+            IMultipartContainer multipartContainer = MultipartHelper.getPartContainer(getWorld(), getPos().offset(facing));
             if(multipartContainer != null) {
-                PartPipe[] partPipes = multipartContainer.getParts().stream().filter(part -> part.getClass() == PartPipe.class).toArray(PartPipe[]::new);
-                for(PartPipe partPipe : partPipes) {
-                    if(partPipe.connections.contains(connection.getOpposite())) {
-                        partPipe.connections.remove(connection.getOpposite());
+                ISlottedPart slottedPart = multipartContainer.getPartInSlot(PartSlot.CENTER);
+                if(slottedPart != null && slottedPart instanceof PartPipe) {
+                    PartPipe partPipe = (PartPipe) slottedPart;
+                    if(partPipe.connections.get(facing.getOpposite().ordinal())) {
+                        partPipe.connections.clear(facing.getOpposite().ordinal());
                     }
                 }
-            }
-        }
-    }
-
-    @Override
-    public void addCollisionBoxes(AxisAlignedBB mask, List<AxisAlignedBB> list, Entity collidingEntity) {
-        if(BASE_AABB.intersectsWith(mask)) {
-            list.add(BASE_AABB);
-        }
-        for(EnumFacing connection : connections) {
-            if(Utils.rotateAABB(CONNECTION_AABB, connection).intersectsWith(mask)) {
-                list.add(Utils.rotateAABB(CONNECTION_AABB, connection));
             }
         }
     }
@@ -141,12 +118,36 @@ public class PartPipe extends TCPart implements INormallyOccludingPart {
             return false;
         }
         try {
-            connections.remove(hit.subHit);
+            int i = 0;
+            for(EnumFacing facing : EnumFacing.values()) {
+                if(!connections.get(facing.ordinal())) {
+                    continue;
+                }
+                if(i == hit.subHit) {
+                    connections.clear(facing.ordinal());
+                }
+                i++;
+            }
             markDirty();
             sendUpdatePacket();
             return true;
         } catch(Exception e) {
             return super.onActivated(player, hand, heldItem, hit);
+        }
+    }
+
+    @Override
+    public void addCollisionBoxes(AxisAlignedBB mask, List<AxisAlignedBB> list, Entity collidingEntity) {
+        if(BASE_AABB.intersectsWith(mask)) {
+            list.add(BASE_AABB);
+        }
+        for(EnumFacing facing : EnumFacing.values()) {
+            if(!connections.get(facing.ordinal())) {
+                continue;
+            }
+            if(Utils.rotateAABB(CONNECTION_AABB, facing).intersectsWith(mask)) {
+                list.add(Utils.rotateAABB(CONNECTION_AABB, facing));
+            }
         }
     }
 
@@ -158,13 +159,21 @@ public class PartPipe extends TCPart implements INormallyOccludingPart {
 //        }
 //        list.add(aabb);
         list.add(BASE_AABB);
-        for(EnumFacing connection : connections) {
-            list.add(Utils.rotateAABB(CONNECTION_AABB, connection));
+        for(EnumFacing facing : EnumFacing.values()) {
+            if(!connections.get(facing.ordinal())) {
+                continue;
+            }
+            list.add(Utils.rotateAABB(CONNECTION_AABB, facing));
         }
     }
 
     @Override
     public void addOcclusionBoxes(List<AxisAlignedBB> list) {
         list.add(Multipart.DEFAULT_RENDER_BOUNDS);
+    }
+
+    @Override
+    public EnumSet<PartSlot> getSlotMask() {
+        return EnumSet.of(PartSlot.CENTER);
     }
 }
