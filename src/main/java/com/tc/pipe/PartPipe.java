@@ -15,7 +15,6 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.BitSet;
 import java.util.EnumSet;
@@ -78,15 +77,7 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
     @Override
     public void onAdded() {
         for(EnumFacing facing : EnumFacing.values()) {
-            IMultipartContainer multipartContainer = MultipartHelper.getPartContainer(getWorld(), getPos().offset(facing));
-            if(multipartContainer != null) {
-                ISlottedPart slottedPart = multipartContainer.getPartInSlot(PartSlot.CENTER);
-                if(slottedPart != null && slottedPart instanceof PartPipe) {
-                    PartPipe partPipe = (PartPipe) slottedPart;
-                    connections.set(facing.ordinal());
-                    partPipe.connections.set(facing.getOpposite().ordinal());
-                }
-            }
+            setValue(facing, true);
         }
     }
 
@@ -96,49 +87,46 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
             if(!connections.get(facing.ordinal())) {
                 continue;
             }
-            IMultipartContainer multipartContainer = MultipartHelper.getPartContainer(getWorld(), getPos().offset(facing));
-            if(multipartContainer != null) {
-                ISlottedPart slottedPart = multipartContainer.getPartInSlot(PartSlot.CENTER);
-                if(slottedPart != null && slottedPart instanceof PartPipe) {
-                    PartPipe partPipe = (PartPipe) slottedPart;
-                    partPipe.connections.clear(facing.getOpposite().ordinal());
-                }
-            }
+            setValue(facing, false);
         }
     }
 
     @Override
     public boolean onActivated(EntityPlayer player, EnumHand hand, ItemStack heldItem, PartMOP hit) {
-        if(hit.subHit == -1) {
+        if(!(heldItem.getItem() instanceof ItemPliers)) {
             return false;
         }
-        try {
-            if(heldItem.getItem() instanceof ItemPliers) {
-                player.swingArm(hand);
-                int i = 0;
-                for(EnumFacing facing : EnumFacing.values()) {
-                    if(!connections.get(facing.ordinal())) {
-                        continue;
-                    }
-                    if(i == hit.subHit) {
-                        connections.clear(facing.ordinal());
-                        IMultipartContainer multipartContainer = MultipartHelper.getPartContainer(getWorld(), getPos().offset(facing));
-                        if(multipartContainer != null) {
-                            ISlottedPart slottedPart = multipartContainer.getPartInSlot(PartSlot.CENTER);
-                            if(slottedPart != null && slottedPart instanceof PartPipe) {
-                                PartPipe partPipe = (PartPipe) slottedPart;
-                                partPipe.connections.clear(facing.getOpposite().ordinal());
-                            }
-                        }
-                    }
-                    i++;
+        player.swingArm(hand);
+        markDirty();
+        sendUpdatePacket();
+        if(hit.subHit == -1) {
+            setValue(hit.sideHit, true);
+        } else {
+            int i = 0;
+            for(EnumFacing facing : EnumFacing.values()) {
+                if(!connections.get(facing.ordinal())) {
+                    continue;
                 }
-                markDirty();
-                sendUpdatePacket();
+                if(i == hit.subHit) {
+                    setValue(facing, false);
+                }
+                i++;
             }
-            return true;
-        } catch(Exception e) {
-            return super.onActivated(player, hand, heldItem, hit);
+        }
+        markDirty();
+        sendUpdatePacket();
+        return true;
+    }
+
+    public void setValue(EnumFacing facing, boolean value) {
+        IMultipartContainer multipartContainer = MultipartHelper.getPartContainer(getWorld(), getPos().offset(facing));
+        if(multipartContainer != null) {
+            ISlottedPart slottedPart = multipartContainer.getPartInSlot(PartSlot.CENTER);
+            if(slottedPart != null && slottedPart instanceof PartPipe) {
+                connections.set(facing.ordinal(), value);
+                PartPipe partPipe = (PartPipe) slottedPart;
+                partPipe.connections.set(facing.getOpposite().ordinal(), value);
+            }
         }
     }
 
@@ -159,11 +147,6 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
 
     @Override
     public void addSelectionBoxes(List<AxisAlignedBB> list) {
-//        AxisAlignedBB aabb = BASE_AABB;
-//        for(EnumFacing connection : connections) {
-//            aabb = aabb.union(Utils.rotateAABB(CONNECTION_AABB, connection));
-//        }
-//        list.add(aabb);
         list.add(BASE_AABB);
         for(EnumFacing facing : EnumFacing.values()) {
             if(!connections.get(facing.ordinal())) {
