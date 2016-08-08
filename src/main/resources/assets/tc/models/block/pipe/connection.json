@@ -27,7 +27,7 @@
         }
     ],
     "textures": {
-        "base": "tc:blocks/pipe/base",
+        "base": "tc:blocks/pipe/base_normal",
         "side": "tc:blocks/pipe/side"
     }
 }

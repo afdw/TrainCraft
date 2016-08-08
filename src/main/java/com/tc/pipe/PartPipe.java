@@ -12,6 +12,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -24,11 +25,20 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
     public static final AxisAlignedBB BASE_AABB = new AxisAlignedBB(4.0 / 16.0, 4.0 / 16.0, 4.0 / 16.0, 12.0 / 16.0, 12.0 / 16.0, 12.0 / 16.0);
     public static final AxisAlignedBB CONNECTION_AABB = new AxisAlignedBB(2.0 / 16.0, 0.0 / 16.0, 2.0 / 16.0, 14.0 / 16.0, 4.0 / 16.0, 14.0 / 16.0);
 
+    public EnumPipeType pipeType = EnumPipeType.NORMAL;
     public BitSet connections = new BitSet(6);
+
+    public PartPipe() {
+    }
+
+    public PartPipe(EnumPipeType pipeType) {
+        this.pipeType = pipeType;
+    }
 
     @Override
     protected void addProperties(List<IProperty<?>> properties) {
         super.addProperties(properties);
+        properties.add(TCProperties.PIPE_TYPE);
         properties.add(TCProperties.CONNECTED_DOWN);
         properties.add(TCProperties.CONNECTED_UP);
         properties.add(TCProperties.CONNECTED_NORTH);
@@ -40,6 +50,7 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
     @Override
     public IBlockState getActualState(IBlockState state) {
         return state
+                .withProperty(TCProperties.PIPE_TYPE, pipeType)
                 .withProperty(TCProperties.CONNECTED_DOWN, connections.get(EnumFacing.DOWN.ordinal()))
                 .withProperty(TCProperties.CONNECTED_UP, connections.get(EnumFacing.UP.ordinal()))
                 .withProperty(TCProperties.CONNECTED_NORTH, connections.get(EnumFacing.NORTH.ordinal()))
@@ -52,18 +63,21 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
     @Override
     public void writeUpdatePacket(PacketBuffer buf) {
         super.writeUpdatePacket(buf);
+        buf.writeInt(pipeType.ordinal());
         buf.writeLongArray(connections.toLongArray());
     }
 
     @Override
     public void readUpdatePacket(PacketBuffer buf) {
         super.readUpdatePacket(buf);
+        pipeType = EnumPipeType.values()[buf.readInt()];
         connections = BitSet.valueOf(buf.readLongArray(new long[6]));
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
+        tag.setInteger("pipe_type", pipeType.ordinal());
         tag.setByteArray("connections", connections.toByteArray());
         return tag;
     }
@@ -71,6 +85,7 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
+        pipeType = EnumPipeType.values()[tag.getInteger("pipe_type")];
         connections = BitSet.valueOf(tag.getByteArray("connections"));
     }
 
@@ -159,6 +174,11 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
     @Override
     public void addOcclusionBoxes(List<AxisAlignedBB> list) {
         addSelectionBoxes(list);
+    }
+
+    @Override
+    public boolean canRenderInLayer(BlockRenderLayer layer) {
+        return layer == BlockRenderLayer.CUTOUT;
     }
 
     @Override
