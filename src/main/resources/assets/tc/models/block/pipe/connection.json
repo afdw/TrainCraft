@@ -2,31 +2,32 @@
     "parent": "block/cube_all",
     "elements": [
         {
-            "from": [1, 0, 1],
-            "to": [15, 1, 15],
+            "from": [2, 0, 2],
+            "to": [14, 1, 14],
             "faces": {
-                "down": {"texture": "#all", "cullface": "down"},
-                "up": {"texture": "#all", "cullface": "up"},
-                "north": {"texture": "#all", "cullface": "north"},
-                "south": {"texture": "#all", "cullface": "south"},
-                "west": {"texture": "#all", "cullface": "west"},
-                "east": {"texture": "#all", "cullface": "east"}
+                "down": {"texture": "#side", "cullface": "down"},
+                "up": {"texture": "#side", "cullface": "up"},
+                "north": {"texture": "#base", "cullface": "north"},
+                "south": {"texture": "#base", "cullface": "south"},
+                "west": {"texture": "#base", "cullface": "west"},
+                "east": {"texture": "#base", "cullface": "east"}
             }
         },
         {
-            "from": [2, 1, 2],
-            "to": [14, 2, 14],
+            "from": [4, 1, 4],
+            "to": [12, 4, 12],
             "faces": {
-                "down": {"texture": "#all", "cullface": "down"},
-                "up": {"texture": "#all", "cullface": "up"},
-                "north": {"texture": "#all", "cullface": "north"},
-                "south": {"texture": "#all", "cullface": "south"},
-                "west": {"texture": "#all", "cullface": "west"},
-                "east": {"texture": "#all", "cullface": "east"}
+                "down": {"texture": "#base", "cullface": "down"},
+                "up": {"texture": "#base", "cullface": "up"},
+                "north": {"texture": "#base", "cullface": "north"},
+                "south": {"texture": "#base", "cullface": "south"},
+                "west": {"texture": "#base", "cullface": "west"},
+                "east": {"texture": "#base", "cullface": "east"}
             }
         }
     ],
     "textures": {
-        "all": "blocks/iron_block"
+        "base": "tc:blocks/pipe/base",
+        "side": "tc:blocks/pipe/side"
     }
 }

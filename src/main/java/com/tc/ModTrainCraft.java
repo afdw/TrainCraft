@@ -1,6 +1,7 @@
 package com.tc;
 
 import com.tc.pipe.ItemPipe;
+import com.tc.pipe.ItemPliers;
 import com.tc.pipe.PartPipe;
 import mcmultipart.multipart.MultipartRegistry;
 import net.minecraft.client.Minecraft;
@@ -25,6 +26,7 @@ public class ModTrainCraft {
     };
 
     public static Item ITEM_PIPE;
+    public static Item ITEM_PLIERS;
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
@@ -34,5 +36,9 @@ public class ModTrainCraft {
         GameRegistry.register(ITEM_PIPE.setRegistryName("pipe"));
         MultipartRegistry.registerPart(PartPipe.class, "tc:pipe");
         Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ITEM_PIPE, 0, new ModelResourceLocation("tc:pipe", "inventory"));
+
+        ITEM_PLIERS = new ItemPliers();
+        GameRegistry.register(ITEM_PLIERS.setRegistryName("pliers"));
+        Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ITEM_PLIERS, 0, new ModelResourceLocation("tc:pliers", "inventory"));
     }
 }

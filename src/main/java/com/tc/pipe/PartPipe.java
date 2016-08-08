@@ -15,14 +15,15 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.BitSet;
 import java.util.EnumSet;
 import java.util.List;
 
 public class PartPipe extends TCPart implements INormallyOccludingPart, ISlottedPart {
-    public static AxisAlignedBB BASE_AABB = new AxisAlignedBB(2.0 / 16.0, 2.0 / 16.0, 2.0 / 16.0, 14.0 / 16.0, 14.0 / 16.0, 14.0 / 16.0);
-    public static AxisAlignedBB CONNECTION_AABB = new AxisAlignedBB(1.0 / 16.0, 0.0 / 16.0, 1.0 / 16.0, 15.0 / 16.0, 2.0 / 16.0, 15.0 / 16.0);
+    public static final AxisAlignedBB BASE_AABB = new AxisAlignedBB(4.0 / 16.0, 4.0 / 16.0, 4.0 / 16.0, 12.0 / 16.0, 12.0 / 16.0, 12.0 / 16.0);
+    public static final AxisAlignedBB CONNECTION_AABB = new AxisAlignedBB(2.0 / 16.0, 0.0 / 16.0, 2.0 / 16.0, 14.0 / 16.0, 4.0 / 16.0, 14.0 / 16.0);
 
     public BitSet connections = new BitSet(6);
 
@@ -82,12 +83,8 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
                 ISlottedPart slottedPart = multipartContainer.getPartInSlot(PartSlot.CENTER);
                 if(slottedPart != null && slottedPart instanceof PartPipe) {
                     PartPipe partPipe = (PartPipe) slottedPart;
-                    if(!connections.get(facing.ordinal())) {
-                        connections.set(facing.ordinal());
-                    }
-                    if(!partPipe.connections.get(facing.getOpposite().ordinal())) {
-                        partPipe.connections.set(facing.getOpposite().ordinal());
-                    }
+                    connections.set(facing.ordinal());
+                    partPipe.connections.set(facing.getOpposite().ordinal());
                 }
             }
         }
@@ -104,9 +101,7 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
                 ISlottedPart slottedPart = multipartContainer.getPartInSlot(PartSlot.CENTER);
                 if(slottedPart != null && slottedPart instanceof PartPipe) {
                     PartPipe partPipe = (PartPipe) slottedPart;
-                    if(partPipe.connections.get(facing.getOpposite().ordinal())) {
-                        partPipe.connections.clear(facing.getOpposite().ordinal());
-                    }
+                    partPipe.connections.clear(facing.getOpposite().ordinal());
                 }
             }
         }
@@ -118,18 +113,29 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
             return false;
         }
         try {
-            int i = 0;
-            for(EnumFacing facing : EnumFacing.values()) {
-                if(!connections.get(facing.ordinal())) {
-                    continue;
+            if(heldItem.getItem() instanceof ItemPliers) {
+                player.swingArm(hand);
+                int i = 0;
+                for(EnumFacing facing : EnumFacing.values()) {
+                    if(!connections.get(facing.ordinal())) {
+                        continue;
+                    }
+                    if(i == hit.subHit) {
+                        connections.clear(facing.ordinal());
+                        IMultipartContainer multipartContainer = MultipartHelper.getPartContainer(getWorld(), getPos().offset(facing));
+                        if(multipartContainer != null) {
+                            ISlottedPart slottedPart = multipartContainer.getPartInSlot(PartSlot.CENTER);
+                            if(slottedPart != null && slottedPart instanceof PartPipe) {
+                                PartPipe partPipe = (PartPipe) slottedPart;
+                                partPipe.connections.clear(facing.getOpposite().ordinal());
+                            }
+                        }
+                    }
+                    i++;
                 }
-                if(i == hit.subHit) {
-                    connections.clear(facing.ordinal());
-                }
-                i++;
+                markDirty();
+                sendUpdatePacket();
             }
-            markDirty();
-            sendUpdatePacket();
             return true;
         } catch(Exception e) {
             return super.onActivated(player, hand, heldItem, hit);
@@ -169,7 +175,7 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
 
     @Override
     public void addOcclusionBoxes(List<AxisAlignedBB> list) {
-        list.add(Multipart.DEFAULT_RENDER_BOUNDS);
+        addSelectionBoxes(list);
     }
 
     @Override
