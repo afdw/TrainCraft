@@ -93,7 +93,7 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
 
     @Override
     public boolean onActivated(EntityPlayer player, EnumHand hand, ItemStack heldItem, PartMOP hit) {
-        if(!(heldItem.getItem() instanceof ItemPliers)) {
+        if(heldItem == null || !(heldItem.getItem() instanceof ItemPliers)) {
             return false;
         }
         player.swingArm(hand);
