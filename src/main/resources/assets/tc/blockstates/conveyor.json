@@ -1,0 +1,14 @@
+{
+    "forge_marker": 1,
+    "defaults": {
+        "model": "tc:conveyor/base"
+    },
+    "variants": {
+        "multipart": [{}],
+        "inventory": [{}],
+        "closed_north": {"false": {}, "true": {"submodel": "tc:conveyor/border", "x": 0, "y": 180}},
+        "closed_south": {"false": {}, "true": {"submodel": "tc:conveyor/border", "x": 0, "y": 0}},
+        "closed_west": {"false": {}, "true": {"submodel": "tc:conveyor/border", "x": 0, "y": 90}},
+        "closed_east": {"false": {}, "true": {"submodel": "tc:conveyor/border", "x": 0, "y": 270}}
+    }
+}

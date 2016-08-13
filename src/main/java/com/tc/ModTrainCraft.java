@@ -1,5 +1,7 @@
 package com.tc;
 
+import com.tc.conveyor.ItemConveyor;
+import com.tc.conveyor.PartConveyor;
 import com.tc.pipe.EnumPipeType;
 import com.tc.pipe.ItemPipe;
 import com.tc.pipe.ItemPliers;
@@ -27,6 +29,7 @@ public class ModTrainCraft {
     };
 
     public static Item ITEM_PIPE;
+    public static Item ITEM_CONVEYOR;
     public static Item ITEM_PLIERS;
 
     @EventHandler
@@ -40,6 +43,11 @@ public class ModTrainCraft {
             Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ITEM_PIPE, pipeType.ordinal(), new ModelResourceLocation("tc:pipe/" + pipeType.getName(), "inventory"));
             ModelLoader.setCustomModelResourceLocation(ITEM_PIPE, pipeType.ordinal(), new ModelResourceLocation("tc:pipe/" + pipeType.getName(), "inventory"));
         }
+
+        ITEM_CONVEYOR = new ItemConveyor();
+        GameRegistry.register(ITEM_CONVEYOR.setRegistryName("conveyor"));
+        MultipartRegistry.registerPart(PartConveyor.class, "tc:conveyor");
+        Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ITEM_CONVEYOR, 0, new ModelResourceLocation("tc:conveyor", "inventory"));
 
         ITEM_PLIERS = new ItemPliers();
         GameRegistry.register(ITEM_PLIERS.setRegistryName("pliers"));

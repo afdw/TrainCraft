@@ -12,4 +12,10 @@ public class TCProperties {
     public static final PropertyBool CONNECTED_SOUTH = PropertyBool.create("connected_south");
     public static final PropertyBool CONNECTED_WEST = PropertyBool.create("connected_west");
     public static final PropertyBool CONNECTED_EAST = PropertyBool.create("connected_east");
+    public static final PropertyBool CLOSED_DOWN = PropertyBool.create("closed_down");
+    public static final PropertyBool CLOSED_UP = PropertyBool.create("closed_up");
+    public static final PropertyBool CLOSED_NORTH = PropertyBool.create("closed_north");
+    public static final PropertyBool CLOSED_SOUTH = PropertyBool.create("closed_south");
+    public static final PropertyBool CLOSED_WEST = PropertyBool.create("closed_west");
+    public static final PropertyBool CLOSED_EAST = PropertyBool.create("closed_east");
 }
