@@ -136,7 +136,7 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
     public void setValue(EnumFacing facing, boolean value) {
         IMultipartContainer multipartContainer = MultipartHelper.getPartContainer(getWorld(), getPos().offset(facing));
         if(multipartContainer != null) {
-            ISlottedPart slottedPart = multipartContainer.getPartInSlot(PartSlot.CENTER);
+            ISlottedPart slottedPart = multipartContainer.getPartInSlot(getPartSlot());
             if(slottedPart != null && slottedPart instanceof PartPipe) {
                 connections.set(facing.ordinal(), value);
                 PartPipe partPipe = (PartPipe) slottedPart;
@@ -181,8 +181,12 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
         return layer == BlockRenderLayer.CUTOUT;
     }
 
+    private PartSlot getPartSlot() {
+        return PartSlot.CENTER;
+    }
+
     @Override
     public EnumSet<PartSlot> getSlotMask() {
-        return EnumSet.of(PartSlot.CENTER);
+        return EnumSet.of(getPartSlot());
     }
 }
