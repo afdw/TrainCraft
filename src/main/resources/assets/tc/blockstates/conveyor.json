@@ -6,9 +6,13 @@
     "variants": {
         "multipart": [{}],
         "inventory": [{}],
-        "closed_north": {"false": {}, "true": {"submodel": "tc:conveyor/border", "x": 0, "y": 180}},
-        "closed_south": {"false": {}, "true": {"submodel": "tc:conveyor/border", "x": 0, "y": 0}},
-        "closed_west": {"false": {}, "true": {"submodel": "tc:conveyor/border", "x": 0, "y": 90}},
-        "closed_east": {"false": {}, "true": {"submodel": "tc:conveyor/border", "x": 0, "y": 270}}
+        "closed_north": {"false": {}, "true": {"submodel": "tc:conveyor/side", "x": 0, "y": 180}},
+        "closed_south": {"false": {}, "true": {"submodel": "tc:conveyor/side", "x": 0, "y": 0}},
+        "closed_west": {"false": {}, "true": {"submodel": "tc:conveyor/side", "x": 0, "y": 90}},
+        "closed_east": {"false": {}, "true": {"submodel": "tc:conveyor/side", "x": 0, "y": 270}},
+        "closed_north_west": {"false": {}, "true": {"submodel": "tc:conveyor/corner", "x": 0, "y": 180}},
+        "closed_south_west": {"false": {}, "true": {"submodel": "tc:conveyor/corner", "x": 0, "y": 90}},
+        "closed_north_east": {"false": {}, "true": {"submodel": "tc:conveyor/corner", "x": 0, "y": 270}},
+        "closed_south_east": {"false": {}, "true": {"submodel": "tc:conveyor/corner", "x": 0, "y": 0}}
     }
 }

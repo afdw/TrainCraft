@@ -1,8 +1,11 @@
 package com.tc;
 
+import com.tc.conveyor.EnumItemConveyorType;
 import com.tc.conveyor.ItemConveyor;
 import com.tc.conveyor.PartConveyor;
+import com.tc.conveyor.SpecialRendererConveyor;
 import com.tc.pipe.*;
+import com.tc.pliers.ItemPliers;
 import com.tc.test.BlockTest;
 import com.tc.test.SpecialRendererTest;
 import com.tc.test.TileEntityTest;
@@ -10,12 +13,10 @@ import mcmultipart.client.multipart.MultipartRegistryClient;
 import mcmultipart.multipart.MultipartRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -53,7 +54,12 @@ public class ModTrainCraft {
         ITEM_CONVEYOR = new ItemConveyor();
         GameRegistry.register(ITEM_CONVEYOR.setRegistryName("conveyor"));
         MultipartRegistry.registerPart(PartConveyor.class, "tc:conveyor");
-        Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ITEM_CONVEYOR, 0, new ModelResourceLocation("tc:conveyor", "inventory"));
+        for(EnumItemConveyorType itemConveyorType : EnumItemConveyorType.values()) {
+            Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ITEM_CONVEYOR, itemConveyorType.ordinal(), new ModelResourceLocation("tc:conveyor", "inventory"));
+            ModelLoader.setCustomModelResourceLocation(ITEM_CONVEYOR, itemConveyorType.ordinal(), new ModelResourceLocation("tc:conveyor", "inventory"));
+        }
+//        Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ITEM_CONVEYOR, 0, new ModelResourceLocation("tc:conveyor", "inventory"));
+        MultipartRegistryClient.bindMultipartSpecialRenderer(PartConveyor.class, new SpecialRendererConveyor());
 
         ITEM_PLIERS = new ItemPliers();
         GameRegistry.register(ITEM_PLIERS.setRegistryName("pliers"));

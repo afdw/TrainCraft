@@ -1,4 +1,4 @@
-package com.tc.pipe;
+package com.tc.pliers;
 
 import com.tc.ModTrainCraft;
 import com.tc.lib.TCItem;

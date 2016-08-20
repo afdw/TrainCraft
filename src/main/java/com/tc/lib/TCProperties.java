@@ -18,4 +18,8 @@ public class TCProperties {
     public static final PropertyBool CLOSED_SOUTH = PropertyBool.create("closed_south");
     public static final PropertyBool CLOSED_WEST = PropertyBool.create("closed_west");
     public static final PropertyBool CLOSED_EAST = PropertyBool.create("closed_east");
+    public static final PropertyBool CLOSED_NORTH_WEST = PropertyBool.create("closed_north_west");
+    public static final PropertyBool CLOSED_SOUTH_WEST = PropertyBool.create("closed_south_west");
+    public static final PropertyBool CLOSED_NORTH_EAST = PropertyBool.create("closed_north_east");
+    public static final PropertyBool CLOSED_SOUTH_EAST = PropertyBool.create("closed_south_east");
 }

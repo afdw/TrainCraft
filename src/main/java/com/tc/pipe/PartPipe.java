@@ -3,6 +3,7 @@ package com.tc.pipe;
 import com.tc.lib.TCPart;
 import com.tc.lib.TCProperties;
 import com.tc.lib.Utils;
+import com.tc.pliers.ItemPliers;
 import mcmultipart.capabilities.ISlottedCapabilityProvider;
 import mcmultipart.client.multipart.IFastMSRPart;
 import mcmultipart.multipart.INormallyOccludingPart;

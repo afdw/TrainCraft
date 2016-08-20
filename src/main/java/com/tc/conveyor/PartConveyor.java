@@ -2,6 +2,7 @@ package com.tc.conveyor;
 
 import com.tc.lib.TCPart;
 import com.tc.lib.TCProperties;
+import mcmultipart.client.multipart.IFastMSRPart;
 import mcmultipart.multipart.INormallyOccludingPart;
 import mcmultipart.multipart.ISlottedPart;
 import mcmultipart.multipart.PartSlot;
@@ -16,18 +17,20 @@ import net.minecraft.util.math.AxisAlignedBB;
 import java.util.EnumSet;
 import java.util.List;
 
-public class PartConveyor extends TCPart implements INormallyOccludingPart, ISlottedPart {
+public class PartConveyor extends TCPart implements INormallyOccludingPart, ISlottedPart, IFastMSRPart {
     public static final AxisAlignedBB AABB = new AxisAlignedBB(0.0 / 16.0, 0.0 / 16.0, 0.0 / 16.0, 16.0 / 16.0, 2.0 / 16.0, 16.0 / 16.0);
 
     public EnumFacing from;
     public EnumFacing to;
+    public boolean isElevator;
 
     public PartConveyor() {
     }
 
-    public PartConveyor(EnumFacing from, EnumFacing to) {
+    public PartConveyor(EnumFacing from, EnumFacing to, boolean isElevator) {
         this.from = from;
         this.to = to;
+        this.isElevator = isElevator;
     }
 
     @Override
@@ -37,10 +40,19 @@ public class PartConveyor extends TCPart implements INormallyOccludingPart, ISlo
         properties.add(TCProperties.CLOSED_SOUTH);
         properties.add(TCProperties.CLOSED_WEST);
         properties.add(TCProperties.CLOSED_EAST);
+        properties.add(TCProperties.CLOSED_NORTH_WEST);
+        properties.add(TCProperties.CLOSED_SOUTH_WEST);
+        properties.add(TCProperties.CLOSED_NORTH_EAST);
+        properties.add(TCProperties.CLOSED_SOUTH_EAST);
     }
 
     private boolean isSideClosed(EnumFacing side) {
         return side != from && side != to;
+    }
+
+    private boolean isCornerClosed(EnumFacing one, EnumFacing two) {
+        return isSideClosed(one.getOpposite()) && isSideClosed(two.getOpposite());
+//        return (from.getOpposite() == one && to.getOpposite() == two) || (from.getOpposite() == two && to.getOpposite() == one);
     }
 
     @Override
@@ -50,6 +62,10 @@ public class PartConveyor extends TCPart implements INormallyOccludingPart, ISlo
                 .withProperty(TCProperties.CLOSED_SOUTH, isSideClosed(EnumFacing.SOUTH))
                 .withProperty(TCProperties.CLOSED_WEST, isSideClosed(EnumFacing.WEST))
                 .withProperty(TCProperties.CLOSED_EAST, isSideClosed(EnumFacing.EAST))
+                .withProperty(TCProperties.CLOSED_NORTH_WEST, isCornerClosed(EnumFacing.NORTH, EnumFacing.WEST))
+                .withProperty(TCProperties.CLOSED_SOUTH_WEST, isCornerClosed(EnumFacing.SOUTH, EnumFacing.WEST))
+                .withProperty(TCProperties.CLOSED_NORTH_EAST, isCornerClosed(EnumFacing.NORTH, EnumFacing.EAST))
+                .withProperty(TCProperties.CLOSED_SOUTH_EAST, isCornerClosed(EnumFacing.SOUTH, EnumFacing.EAST))
                 ;
     }
 
@@ -58,6 +74,7 @@ public class PartConveyor extends TCPart implements INormallyOccludingPart, ISlo
         super.writeUpdatePacket(buf);
         buf.writeInt(from.ordinal());
         buf.writeInt(to.ordinal());
+        buf.writeBoolean(isElevator);
     }
 
     @Override
@@ -65,6 +82,7 @@ public class PartConveyor extends TCPart implements INormallyOccludingPart, ISlo
         super.readUpdatePacket(buf);
         from = EnumFacing.values()[buf.readInt()];
         to = EnumFacing.values()[buf.readInt()];
+        isElevator = buf.readBoolean();
     }
 
     @Override
@@ -72,6 +90,7 @@ public class PartConveyor extends TCPart implements INormallyOccludingPart, ISlo
         super.writeToNBT(tag);
         tag.setInteger("from", from.ordinal());
         tag.setInteger("to", to.ordinal());
+        tag.setBoolean("is_elevator", isElevator);
         return tag;
     }
 
@@ -80,6 +99,7 @@ public class PartConveyor extends TCPart implements INormallyOccludingPart, ISlo
         super.readFromNBT(tag);
         from = EnumFacing.values()[tag.getInteger("from")];
         to = EnumFacing.values()[tag.getInteger("to")];
+        isElevator = tag.getBoolean("is_elevator");
     }
 
     @Override
@@ -106,5 +126,10 @@ public class PartConveyor extends TCPart implements INormallyOccludingPart, ISlo
     @Override
     public EnumSet<PartSlot> getSlotMask() {
         return EnumSet.of(getPartSlot());
+    }
+
+    @Override
+    public boolean hasFastRenderer() {
+        return true;
     }
 }
