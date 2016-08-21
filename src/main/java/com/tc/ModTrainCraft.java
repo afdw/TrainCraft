@@ -1,6 +1,6 @@
 package com.tc;
 
-import com.tc.conveyor.EnumItemConveyorType;
+import com.tc.conveyor.EnumConveyorType;
 import com.tc.conveyor.ItemConveyor;
 import com.tc.conveyor.PartConveyor;
 import com.tc.conveyor.SpecialRendererConveyor;
@@ -54,11 +54,10 @@ public class ModTrainCraft {
         ITEM_CONVEYOR = new ItemConveyor();
         GameRegistry.register(ITEM_CONVEYOR.setRegistryName("conveyor"));
         MultipartRegistry.registerPart(PartConveyor.class, "tc:conveyor");
-        for(EnumItemConveyorType itemConveyorType : EnumItemConveyorType.values()) {
-            Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ITEM_CONVEYOR, itemConveyorType.ordinal(), new ModelResourceLocation("tc:conveyor", "inventory"));
-            ModelLoader.setCustomModelResourceLocation(ITEM_CONVEYOR, itemConveyorType.ordinal(), new ModelResourceLocation("tc:conveyor", "inventory"));
+        for(EnumConveyorType conveyorType : EnumConveyorType.values()) {
+            Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ITEM_CONVEYOR, conveyorType.ordinal(), new ModelResourceLocation("tc:conveyor/" + conveyorType.getName(), "inventory"));
+            ModelLoader.setCustomModelResourceLocation(ITEM_CONVEYOR, conveyorType.ordinal(), new ModelResourceLocation("tc:conveyor/" + conveyorType.getName(), "inventory"));
         }
-//        Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ITEM_CONVEYOR, 0, new ModelResourceLocation("tc:conveyor", "inventory"));
         MultipartRegistryClient.bindMultipartSpecialRenderer(PartConveyor.class, new SpecialRendererConveyor());
 
         ITEM_PLIERS = new ItemPliers();

@@ -26,21 +26,21 @@ public class ItemConveyor extends ItemMultiPart {
 
     @Override
     public void getSubItems(Item item, CreativeTabs tab, List<ItemStack> subItems) {
-        for(EnumItemConveyorType itemConveyorType : EnumItemConveyorType.values()) {
-            subItems.add(new ItemStack(item, 1, itemConveyorType.ordinal()));
+        for(EnumConveyorType conveyorType : EnumConveyorType.values()) {
+            subItems.add(new ItemStack(item, 1, conveyorType.ordinal()));
         }
     }
 
     @Override
     public String getUnlocalizedName(ItemStack stack) {
-        return this.getUnlocalizedName() + "_" + EnumItemConveyorType.values()[stack.getItemDamage()].name().toLowerCase();
+        return this.getUnlocalizedName() + "_" + EnumConveyorType.values()[stack.getItemDamage()].getName();
     }
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(ItemStack itemStack, World world, EntityPlayer player, EnumHand hand) {
         if(player.isSneaking()) {
             ItemStack copy = itemStack.copy();
-            copy.setItemDamage((copy.getItemDamage() + 1) % EnumItemConveyorType.values().length);
+            copy.setItemDamage((copy.getItemDamage() + 1) % EnumConveyorType.values().length);
             return new ActionResult<>(EnumActionResult.SUCCESS, copy);
         }
         return new ActionResult<>(EnumActionResult.PASS, itemStack);
@@ -48,14 +48,6 @@ public class ItemConveyor extends ItemMultiPart {
 
     @Override
     public IMultipart createPart(World world, BlockPos pos, EnumFacing side, Vec3d hit, ItemStack stack, EntityPlayer player) {
-        switch(EnumItemConveyorType.values()[stack.getMetadata()]) {
-            case STRAIGHT:
-                return new PartConveyor(player.getHorizontalFacing().getOpposite(), player.getHorizontalFacing(), false);
-            case LEFT:
-                return new PartConveyor(player.getHorizontalFacing().rotateY(), player.getHorizontalFacing(), false);
-            case RIGHT:
-                return new PartConveyor(player.getHorizontalFacing().rotateYCCW(), player.getHorizontalFacing(), false);
-        }
-        return null;
+        return new PartConveyor(EnumConveyorType.values()[stack.getMetadata()], player.getHorizontalFacing().getOpposite());
     }
 }

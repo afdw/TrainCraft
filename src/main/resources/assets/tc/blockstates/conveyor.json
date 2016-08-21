@@ -1,18 +1,27 @@
 {
     "forge_marker": 1,
     "defaults": {
-        "model": "tc:conveyor/base"
     },
     "variants": {
         "multipart": [{}],
         "inventory": [{}],
-        "closed_north": {"false": {}, "true": {"submodel": "tc:conveyor/side", "x": 0, "y": 180}},
-        "closed_south": {"false": {}, "true": {"submodel": "tc:conveyor/side", "x": 0, "y": 0}},
-        "closed_west": {"false": {}, "true": {"submodel": "tc:conveyor/side", "x": 0, "y": 90}},
-        "closed_east": {"false": {}, "true": {"submodel": "tc:conveyor/side", "x": 0, "y": 270}},
-        "closed_north_west": {"false": {}, "true": {"submodel": "tc:conveyor/corner", "x": 0, "y": 180}},
-        "closed_south_west": {"false": {}, "true": {"submodel": "tc:conveyor/corner", "x": 0, "y": 90}},
-        "closed_north_east": {"false": {}, "true": {"submodel": "tc:conveyor/corner", "x": 0, "y": 270}},
-        "closed_south_east": {"false": {}, "true": {"submodel": "tc:conveyor/corner", "x": 0, "y": 0}}
+        "conveyor_type": {
+            "straight": {
+                "model": "tc:conveyor/straight"
+            },
+            "left": {
+                "model": "tc:conveyor/left"
+            },
+            "right": {
+                "model": "tc:conveyor/right"
+            },
+            "up": {
+                "model": "tc:conveyor/up"
+            },
+            "down": {
+                "model": "tc:conveyor/down"
+            }
+        },
+        "direction": {"down": {}, "up": {}, "north": {"y": 0}, "south": {"y": 180}, "west": {"y": 270}, "east": {"y": 90}}
     }
 }
