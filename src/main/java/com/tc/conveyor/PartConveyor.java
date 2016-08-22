@@ -5,6 +5,7 @@ import com.tc.lib.TCProperties;
 import mcmultipart.client.multipart.IFastMSRPart;
 import mcmultipart.multipart.INormallyOccludingPart;
 import mcmultipart.multipart.ISlottedPart;
+import mcmultipart.multipart.Multipart;
 import mcmultipart.multipart.PartSlot;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
@@ -78,19 +79,33 @@ public class PartConveyor extends TCPart implements INormallyOccludingPart, ISlo
 
     @Override
     public void addSelectionBoxes(List<AxisAlignedBB> list) {
-        list.add(AABB);
-    }
-
-    @Override
-    public void addCollisionBoxes(AxisAlignedBB mask, List<AxisAlignedBB> list, Entity collidingEntity) {
-        if(mask.intersectsWith(AABB)) {
+        if(conveyorType == EnumConveyorType.UP || conveyorType == EnumConveyorType.DOWN) {
+            list.add(Multipart.DEFAULT_RENDER_BOUNDS);
+        } else {
             list.add(AABB);
         }
     }
 
     @Override
+    public void addCollisionBoxes(AxisAlignedBB mask, List<AxisAlignedBB> list, Entity collidingEntity) {
+        if(conveyorType == EnumConveyorType.UP || conveyorType == EnumConveyorType.DOWN) {
+            if(mask.intersectsWith(Multipart.DEFAULT_RENDER_BOUNDS)) {
+                list.add(Multipart.DEFAULT_RENDER_BOUNDS);
+            }
+        } else {
+            if(mask.intersectsWith(AABB)) {
+                list.add(AABB);
+            }
+        }
+    }
+
+    @Override
     public void addOcclusionBoxes(List<AxisAlignedBB> list) {
-        list.add(AABB);
+        if(conveyorType == EnumConveyorType.UP || conveyorType == EnumConveyorType.DOWN) {
+            list.add(Multipart.DEFAULT_RENDER_BOUNDS);
+        } else {
+            list.add(AABB);
+        }
     }
 
     private PartSlot getPartSlot() {
