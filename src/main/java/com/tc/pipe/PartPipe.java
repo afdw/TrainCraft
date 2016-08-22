@@ -34,9 +34,7 @@ import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.BitSet;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 public class PartPipe extends TCPart implements INormallyOccludingPart, ISlottedPart, IFastMSRPart, ICapabilityProvider, ISlottedCapabilityProvider, ITickable {
     public static final AxisAlignedBB BASE_AABB = new AxisAlignedBB(4.0 / 16.0, 4.0 / 16.0, 4.0 / 16.0, 12.0 / 16.0, 12.0 / 16.0, 12.0 / 16.0);
@@ -47,6 +45,7 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
     public BitSet possibles = new BitSet(6);
     public FluidTank tank = new FluidTank(16 * Fluid.BUCKET_VOLUME);
     public double[] cornerHeights = new double[4];
+    private Map<EnumFacing, IFluidHandler> fluidHandlerMap = new HashMap<>();
 
     public PartPipe() {
         possibles.set(0, 6, true);
@@ -141,8 +140,6 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
             return false;
         }
         player.swingArm(hand);
-        markDirty();
-        sendUpdatePacket();
         if(hit.subHit == -1) {
             possibles.set(hit.sideHit.ordinal());
         } else {
@@ -226,34 +223,45 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
             if(!possibles.get(facing.ordinal())) {
                 return super.getCapability(capability, facing);
             }
+            if(!fluidHandlerMap.containsKey(facing)) {
+                fluidHandlerMap.put(facing, new IFluidHandler() {
+                    @Override
+                    public IFluidTankProperties[] getTankProperties() {
+                        return tank.getTankProperties();
+                    }
+
+                    @Override
+                    public int fill(FluidStack resource, boolean doFill) {
+                        int result = tank.fill(resource, doFill);
+                        if(doFill) {
+                            sendUpdatePacket();
+                        }
+                        return result;
+                    }
+
+                    @Nullable
+                    @Override
+                    public FluidStack drain(FluidStack resource, boolean doDrain) {
+                        FluidStack result = tank.drain(resource, doDrain);
+                        if(doDrain) {
+                            sendUpdatePacket();
+                        }
+                        return result;
+                    }
+
+                    @Nullable
+                    @Override
+                    public FluidStack drain(int maxDrain, boolean doDrain) {
+                        FluidStack result = tank.drain(maxDrain, doDrain);
+                        if(doDrain) {
+                            sendUpdatePacket();
+                        }
+                        return result;
+                    }
+                });
+            }
             //noinspection unchecked
-            return (T) new IFluidHandler() {
-
-                @Override
-                public IFluidTankProperties[] getTankProperties() {
-                    return tank.getTankProperties();
-                }
-
-                @Override
-                public int fill(FluidStack resource, boolean doFill) {
-                    sendUpdatePacket();
-                    return tank.fill(resource, doFill);
-                }
-
-                @Nullable
-                @Override
-                public FluidStack drain(FluidStack resource, boolean doDrain) {
-                    sendUpdatePacket();
-                    return tank.drain(resource, doDrain);
-                }
-
-                @Nullable
-                @Override
-                public FluidStack drain(int maxDrain, boolean doDrain) {
-                    sendUpdatePacket();
-                    return tank.drain(maxDrain, doDrain);
-                }
-            };
+            return (T) fluidHandlerMap.get(facing);
         }
         return super.getCapability(capability, facing);
     }
@@ -277,12 +285,12 @@ public class PartPipe extends TCPart implements INormallyOccludingPart, ISlotted
         for(EnumFacing facing : EnumFacing.values()) {
             TileEntity tileEntity = getWorld().getTileEntity(getPos().offset(facing));
             if(possibles.get(facing.ordinal()) && tileEntity != null && tileEntity.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, facing.getOpposite())) {
-                IFluidHandler fluidHandler = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, facing.getOpposite());
-                FluidStack otherFluidStack = fluidHandler.drain(Integer.MAX_VALUE, false);
-                if(otherFluidStack == null || tank.getFluidAmount() > otherFluidStack.amount) {
-                    if(facing != EnumFacing.UP || tank.getFluidAmount() >= tank.getCapacity()) {
-                        FluidStack myFluidStack = tank.drain((facing == EnumFacing.DOWN) ? 10000 : 100, false);
-                        if(myFluidStack != null) {
+                FluidStack myFluidStack = tank.drain((facing == EnumFacing.DOWN) ? 10000 : 100, false);
+                if(myFluidStack != null) {
+                    IFluidHandler fluidHandler = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, facing.getOpposite());
+                    FluidStack otherFluidStack = fluidHandler.drain(Integer.MAX_VALUE, false);
+                    if(otherFluidStack == null || (myFluidStack.amount > otherFluidStack.amount && myFluidStack.amount - otherFluidStack.amount >= 100)) {
+                        if(facing != EnumFacing.UP || tank.getFluidAmount() >= tank.getCapacity()) {
                             int count = fluidHandler.fill(myFluidStack, true);
                             if(count > 0) {
                                 tank.drain(count, true);
